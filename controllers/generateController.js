@@ -120,7 +120,7 @@ export const generateQuestions = async (req, res, next) => {
 }`,
         },
       ],
-      max_tokens: 400,
+      max_tokens: 450,
       temperature: 0.7,
     });
 
@@ -131,17 +131,49 @@ export const generateQuestions = async (req, res, next) => {
     console.log('=== 생성된 원본 내용 ===');
     console.log(content);
 
-    // JSON 파싱
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error('JSON 형식 응답을 찾을 수 없습니다');
+    // finish_reason이 length인 경우 경고
+    if (completion.choices[0].finish_reason === 'length') {
+      console.warn('⚠️ 응답이 잘렸습니다. max_tokens를 늘려야 합니다.');
     }
 
-    const parsed = JSON.parse(jsonMatch[0]);
-    const questions = parsed.questions;
+    // JSON 파싱 시도
+    let parsed;
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('JSON 형식 응답을 찾을 수 없습니다');
+      }
+
+      // 잘린 JSON 복구 시도
+      let jsonStr = jsonMatch[0];
+      
+      // 닫는 괄호들이 없으면 추가
+      const openBraces = (jsonStr.match(/\{/g) || []).length;
+      const closeBraces = (jsonStr.match(/\}/g) || []).length;
+      const openBrackets = (jsonStr.match(/\[/g) || []).length;
+      const closeBrackets = (jsonStr.match(/\]/g) || []).length;
+      
+      for (let i = 0; i < openBrackets - closeBrackets; i++) {
+        jsonStr += ']';
+      }
+      for (let i = 0; i < openBraces - closeBraces; i++) {
+        jsonStr += '}';
+      }
+
+      parsed = JSON.parse(jsonStr);
+    } catch (parseError) {
+      console.error('JSON 파싱 실패:', parseError);
+      throw new Error('응답을 파싱할 수 없습니다. 다시 시도해주세요.');
+    }
+
+    const questions = parsed.questions || [];
 
     console.log('=== 파싱된 문제 배열 ===');
     console.log(questions);
+
+    if (questions.length === 0) {
+      throw new Error('문제를 생성하지 못했습니다. 다시 시도해주세요.');
+    }
 
     res.json({ topic, questions });
   } catch (error) {
