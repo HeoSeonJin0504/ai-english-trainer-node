@@ -17,26 +17,30 @@ export const generateExamples = async (req, res, next) => {
       messages: [
         {
           role: 'system',
-          content: 'You are an English teacher. Generate example sentences with Korean translations.',
+          content: '당신은 영어 교사입니다. 학습자에게 유용한 예문을 작성해주세요.',
         },
         {
           role: 'user',
-          content: `
-Generate 5 example sentences using the word "${word}". 
-For each item, return both the English sentence and its Korean translation.
+          content: `"${word}" 단어를 사용한 예문 5개를 만들어주세요.
 
-Format:
-1. English: ...
-   Korean: ...
-2. English: ...
-   Korean: ...
-(continue until 5)
+요구사항:
+- 각 예문은 실생활에서 자주 쓰이는 표현으로 작성
+- 난이도는 중급 수준 (너무 쉽거나 어렵지 않게)
+- 다양한 문맥과 상황 포함
+- 각 예문마다 정확한 한국어 번역 제공
 
-Return exactly 5 items.
-          `,
+아래 JSON 형식으로만 응답하세요:
+{
+  "examples": [
+    {
+      "english": "영어 예문",
+      "korean": "한국어 번역"
+    }
+  ]
+}`,
         },
       ],
-      max_tokens: 200,
+      max_tokens: 250,
       temperature: 0.7,
     });
 
@@ -47,11 +51,14 @@ Return exactly 5 items.
     console.log('=== 생성된 원본 내용 ===');
     console.log(content);
 
-    // 줄단위로 나누고 불필요한 빈 줄 제거
-    const examples = content
-      .split('\n')
-      .filter(line => line.trim())
-      .map(line => line.trim());
+    // JSON 파싱
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('JSON 형식 응답을 찾을 수 없습니다');
+    }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    const examples = parsed.examples;
 
     console.log('=== 파싱된 예문 배열 ===');
     console.log(examples);
@@ -82,29 +89,38 @@ export const generateQuestions = async (req, res, next) => {
       messages: [
         {
           role: 'system',
-          content: 'You are an English teacher creating quiz questions.',
+          content: '당신은 영어 시험 문제를 출제하는 전문가입니다. 학습 효과가 높은 문제를 만들어주세요.',
         },
         {
           role: 'user',
-          content: `
-Create 5 multiple choice questions about "${topic}".
+          content: `"${topic}" 주제로 4지선다 영어 퀴즈 5개를 만들어주세요.
 
-For each question, return the following structure:
+요구사항:
+- 문제는 해당 주제의 핵심 개념을 다루어야 함
+- 난이도는 중급 수준
+- 오답 선택지도 그럴듯하게 작성 (너무 명백한 오답은 제외)
+- 문제와 선택지는 영어로, 문제 설명은 한국어로 제공
+- 정답은 A, B, C, D 중 하나로 명확히 표시
 
-Question: (English)
-Translation: (Korean)
-A) ...
-B) ...
-C) ...
-D) ...
-Answer: X
-
-Return exactly 5 questions.
-Separate each question with one blank line.
-          `,
+아래 JSON 형식으로만 응답하세요:
+{
+  "questions": [
+    {
+      "question": "영어 질문",
+      "translation": "한국어 설명",
+      "options": {
+        "A": "선택지 1",
+        "B": "선택지 2",
+        "C": "선택지 3",
+        "D": "선택지 4"
+      },
+      "answer": "정답 (A, B, C, D 중 하나)"
+    }
+  ]
+}`,
         },
       ],
-      max_tokens: 350,
+      max_tokens: 400,
       temperature: 0.7,
     });
 
@@ -115,10 +131,14 @@ Separate each question with one blank line.
     console.log('=== 생성된 원본 내용 ===');
     console.log(content);
 
-    // 문제는 두 줄 공백 기준으로 split
-    const questions = content
-      .split('\n\n')
-      .filter(q => q.trim());
+    // JSON 파싱
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('JSON 형식 응답을 찾을 수 없습니다');
+    }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    const questions = parsed.questions;
 
     console.log('=== 파싱된 문제 배열 ===');
     console.log(questions);
