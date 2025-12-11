@@ -185,7 +185,7 @@ JSON 이외의 텍스트는 절대 포함하지 마세요.
           content: mode === "toeic" ? toeicPrompt : writingPrompt,
         },
       ],
-      max_tokens: 850,
+      max_tokens: 950,
       temperature: 0.7,
     });
 
