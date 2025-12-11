@@ -75,54 +75,74 @@ export const generateQuestions = async (req, res, next) => {
     // 토익모드
     const toeicPrompt = `
 당신은 토익(TOEIC) 문제를 전문적으로 출제하는 능력을 가진 AI입니다.
-아래 구성으로 총 6개의 문제를 JSON으로 생성하세요.
+반드시 아래 형식을 지키고, JSON만 출력하세요.
 
-📌 Part 5 – 문법 빈칸 2문항
-  - 문장 1개당 빈칸 1개
-  - 4지선다
-  - 중급 난이도
+총 6개의 문제를 아래와 같이 출제하세요:
 
-📌 Part 6 – 문장 위치 선택 문제 2문항
-  - 간단한 패시지 1개
-  - 문장 4개 중 어디에 들어갈지 고르는 문제
-  - 보기: A / B / C / D
+========================================
+📌 Part 5 – 문법 빈칸 문제(2문항)
+- 각 문장에 빈칸(____) 1개 포함
+- 4지선다
+- topic을 반영한 자연스러운 문장
+- 간단한 해설(explanation)은 반드시 한국어로 작성
 
-📌 Part 7 – 독해 문제 2문항
-  - 짧은 지문 + 질문 1개씩
+📌 Part 6 – 문장 삽입 문제(2문항)
+- 짧은 패시지 1개당 1문항
+- 패시지는 [1], [2], [3], [4] 위치가 표시된 4문장으로 구성
+- 선택지는 A~D의 문장 후보 4개
+- A~D 중 어디에 삽입해야 하는지 선택
+- 해설(explanation)은 반드시 한국어로 작성
 
-⚠️ 응답 형식(JSON ONLY):
+(예시 구조)
+passage: "문장A [1] 문장B [2] 문장C [3] 문장D [4]"
+question: "Where should the sentence be inserted?"
+insertSentence: "삽입해야 할 문장"
+options: { "A": "[1]", "B": "[2]", "C": "[3]", "D": "[4]" }
+answer: "B"
+
+📌 Part 7 – 독해 문제(2문항)
+- 짧은 지문 + 문제 + 4지선다
+- topic 반영
+- 해설(explanation)은 반드시 한국어로 작성
+========================================
+
+⚠️ 반드시 JSON ONLY로 출력하세요.
 
 {
   "mode": "toeic",
   "questions": {
     "part5": [
       {
-        "question": "문장 (빈칸 포함)",
+        "question": "",
         "options": { "A": "", "B": "", "C": "", "D": "" },
-        "answer": "A"
+        "answer": "",
+        "explanation": ""  // 한국어로 작성
       }
     ],
     "part6": [
       {
-        "passage": "짧은 패시지...",
-        "question": "어느 위치에 넣어야 할까?",
-        "options": { "A": "문장1", "B": "문장2", "C": "문장3", "D": "문장4" },
-        "answer": "C"
+        "passage": "",
+        "insertSentence": "",
+        "question": "Where should the sentence be inserted?",
+        "options": { "A": "[1]", "B": "[2]", "C": "[3]", "D": "[4]" },
+        "answer": "",
+        "explanation": ""  // 한국어로 작성
       }
     ],
     "part7": [
       {
-        "passage": "짧은 독해 지문...",
-        "question": "질문",
+        "passage": "",
+        "question": "",
         "options": { "A": "", "B": "", "C": "", "D": "" },
-        "answer": "B"
+        "answer": "",
+        "explanation": ""  // 한국어로 작성
       }
     ]
   }
 }
 
-"${topic}"을 반영하여 출제하세요.
-다른 텍스트 없이 JSON만 출력하세요.
+"${topic}"을 반영하여 자연스럽게 출제하세요.
+출력은 반드시 JSON만 포함해야 하며, 그 외의 텍스트는 절대 포함하지 마세요.
     `;
 
     // 영작모드
@@ -165,7 +185,7 @@ JSON 이외의 텍스트는 절대 포함하지 마세요.
           content: mode === "toeic" ? toeicPrompt : writingPrompt,
         },
       ],
-      max_tokens: 600,
+      max_tokens: 850,
       temperature: 0.7,
     });
 
