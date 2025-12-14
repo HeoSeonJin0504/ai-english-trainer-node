@@ -11,6 +11,11 @@ node_modules
 dist
 dist-ssr
 *.local
+google-credentials.json
+*.json
+!package.json
+!tsconfig.json
+words.json
 
 # Editor directories and files
 .vscode/*
