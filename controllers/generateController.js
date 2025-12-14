@@ -1,17 +1,13 @@
 import openai from "../config/openai.js";
 
-// 예문 생성
 export const generateExamples = async (req, res, next) => {
   try {
     const { word } = req.body;
-
     if (!word) {
       return res.status(400).json({ error: "Word is required" });
     }
-
     console.log("=== 예문 생성 요청 ===");
     console.log("단어:", word);
-
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -23,29 +19,123 @@ export const generateExamples = async (req, res, next) => {
           role: "user",
           content: `"${word}"가 유효한 영어 단어인지 먼저 확인하고, 학습 자료를 JSON 형식으로 만들어주세요.
 
-(중략 — 원문 그대로 유지)
+⚠️ 반드시 아래 JSON 형식만 출력하세요. 다른 텍스트는 포함하지 마세요.
+
+유효하지 않은 단어인 경우:
+{
+  "isValid": false,
+  "errorMessage": "유효한 영어 단어가 아닙니다"
+}
+
+유효한 단어인 경우:
+{
+  "isValid": true,
+  "word": {
+    "original": "${word}",
+    "meanings": [
+      {
+        "partOfSpeech": "품사 (예: 명사, 동사, 형용사)",
+        "meaning": "한국어 뜻"
+      }
+    ]
+  },
+  "examples": [
+    {
+      "english": "영어 예문 (단어를 포함한 자연스러운 문장)",
+      "korean": "한국어 번역"
+    }
+  ],
+  "relatedWords": {
+    "synonym": {
+      "word": "유의어",
+      "partOfSpeech": "품사",
+      "meaning": "한국어 뜻"
+    },
+    "antonym": {
+      "word": "반의어",
+      "partOfSpeech": "품사",
+      "meaning": "한국어 뜻"
+    }
+  }
+}
+
+📌 중요 규칙:
+- meanings는 1~3개 제공
+- examples는 정확히 3개 제공
+- examples는 각각 초급, 중급, 고급 수준으로 작성
+- 각 예문은 단어의 다양한 용법을 보여줘야 함
+- synonym(유의어)는 반드시 제공
+- antonym(반의어)는 가능한 한 제공하되, 정말로 적절한 반의어가 존재하지 않는 경우에만 null 사용
+  * 예: happy → sad (O)
+  * 예: big → small (O)
+  * 예: good → bad (O)
+  * 예: hot → cold (O)
+  * 예: beautiful → ugly (O)
+  * 예: love(동사) → hate (O)
+  * 예: increase → decrease (O)
+  * 예: book(명사) → null (정말 반의어가 없는 경우)
+  * 예: table(명사) → null (정말 반의어가 없는 경우)
+- 형용사, 동사, 부사는 대부분 반의어가 존재하므로 반드시 찾아서 제공
+- 명사의 경우에도 가능하면 반의어 제공 (예: success ↔ failure, friend ↔ enemy)
+- JSON만 출력하고 다른 설명은 절대 포함하지 마세요
+
+예시 1 (반의어 있음):
+{
+  "isValid": true,
+  "word": {
+    "original": "happy",
+    "meanings": [
+      { "partOfSpeech": "형용사", "meaning": "행복한, 기쁜" }
+    ]
+  },
+  "examples": [
+    { "english": "I am happy to see you.", "korean": "당신을 만나서 기쁩니다." }
+  ],
+  "relatedWords": {
+    "synonym": { "word": "joyful", "partOfSpeech": "형용사", "meaning": "즐거운" },
+    "antonym": { "word": "sad", "partOfSpeech": "형용사", "meaning": "슬픈" }
+  }
+}
+
+예시 2 (반의어 없음):
+{
+  "isValid": true,
+  "word": {
+    "original": "book",
+    "meanings": [
+      { "partOfSpeech": "명사", "meaning": "책" }
+    ]
+  },
+  "examples": [
+    { "english": "I read a book every day.", "korean": "나는 매일 책을 읽는다." }
+  ],
+  "relatedWords": {
+    "synonym": { "word": "publication", "partOfSpeech": "명사", "meaning": "출판물" },
+    "antonym": null
+  }
+}
 `,
         },
       ],
-      max_tokens: 500,
+      max_tokens: 800,
       temperature: 0.7,
     });
-
     const content = completion.choices[0].message.content;
-
+    console.log("GPT 응답:", content);
     const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("JSON 형식 응답을 찾을 수 없습니다");
-
+    if (!jsonMatch) {
+      console.error("JSON을 찾을 수 없음:", content);
+      throw new Error("JSON 형식 응답을 찾을 수 없습니다");
+    }
     const parsed = JSON.parse(jsonMatch[0]);
-
+    console.log("파싱된 데이터:", JSON.stringify(parsed, null, 2));
     if (parsed.isValid === false) {
       return res.status(400).json({
         error: "Invalid word",
-        message: parsed.errorMessage,
+        message: parsed.errorMessage || "유효한 영어 단어가 아닙니다",
         word: word,
       });
     }
-
     res.json(parsed);
   } catch (error) {
     console.error("=== 예문 생성 에러 ===");
@@ -80,13 +170,13 @@ export const generateQuestions = async (req, res, next) => {
 총 6개의 문제를 아래와 같이 출제하세요:
 
 ========================================
-📌 Part 5 – 문법 빈칸 문제(2문항)
+📌 Part 5 - 문법 빈칸 문제(2문항)
 - 각 문장에 빈칸(____) 1개 포함
 - 4지선다
 - topic을 반영한 자연스러운 문장
 - 간단한 해설(explanation)은 반드시 한국어로 작성
 
-📌 Part 6 – 문장 삽입 문제(2문항)
+📌 Part 6 - 문장 삽입 문제(2문항)
 - 짧은 패시지 1개당 1문항
 - 패시지는 [1], [2], [3], [4] 위치가 표시된 4문장으로 구성
 - 선택지는 A~D의 문장 후보 4개
@@ -100,7 +190,7 @@ insertSentence: "삽입해야 할 문장"
 options: { "A": "[1]", "B": "[2]", "C": "[3]", "D": "[4]" }
 answer: "B"
 
-📌 Part 7 – 독해 문제(2문항)
+📌 Part 7 - 독해 문제(2문항)
 - 짧은 지문 + 문제 + 4지선다
 - topic 반영
 - 해설(explanation)은 반드시 한국어로 작성
