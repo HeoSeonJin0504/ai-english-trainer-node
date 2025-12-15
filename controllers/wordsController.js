@@ -32,17 +32,25 @@ export const getWords = async (req, res, next) => {
 // 단어 추가
 export const addWord = async (req, res, next) => {
   try {
-    const { word, examples } = req.body;
+    const { word, partOfSpeech, examples } = req.body;
 
+    // 유효성 검사
     if (!word) {
       return res.status(400).json({ error: 'Word is required' });
     }
 
+    if (!partOfSpeech || (Array.isArray(partOfSpeech) && partOfSpeech.length === 0)) {
+      return res.status(400).json({ error: 'Part of speech is required' });
+    }
+
     const data = await readData();
+    
+    // 새 단어 객체 생성
     const newWord = {
       id: Date.now().toString(),
       word,
-      examples: examples || [],
+      partOfSpeech: Array.isArray(partOfSpeech) ? partOfSpeech : [partOfSpeech], // 배열로 저장
+      examples: examples || [], // [{ english: "...", korean: "..." }] 형태
       createdAt: new Date().toISOString(),
     };
 
@@ -50,6 +58,37 @@ export const addWord = async (req, res, next) => {
     await writeData(data);
 
     res.status(201).json(newWord);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 단어 수정 (선택적 - 나중에 필요할 수 있음)
+export const updateWord = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { word, partOfSpeech, examples } = req.body;
+    
+    const data = await readData();
+    const wordIndex = data.words.findIndex(w => w.id === id);
+
+    if (wordIndex === -1) {
+      return res.status(404).json({ error: 'Word not found' });
+    }
+
+    // 기존 데이터 유지하면서 업데이트
+    if (word) data.words[wordIndex].word = word;
+    if (partOfSpeech) {
+      data.words[wordIndex].partOfSpeech = Array.isArray(partOfSpeech) 
+        ? partOfSpeech 
+        : [partOfSpeech];
+    }
+    if (examples) data.words[wordIndex].examples = examples;
+    
+    data.words[wordIndex].updatedAt = new Date().toISOString();
+
+    await writeData(data);
+    res.json(data.words[wordIndex]);
   } catch (error) {
     next(error);
   }
