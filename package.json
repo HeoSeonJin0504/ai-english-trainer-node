@@ -1,24 +1,40 @@
 {
   "name": "ai-english-trainer-node",
   "version": "1.0.0",
-  "description": "",
+  "description": "AI English Trainer API Server(Node.js)",
   "main": "app.js",
   "type": "module",
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "db:init": "node scripts/initDb.js"
   },
-  "keywords": [],
+  "keywords": [
+    "english",
+    "learning",
+    "ai",
+    "toeic",
+    "vocabulary"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@google-cloud/text-to-speech": "^6.4.0",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
-    "openai": "^6.10.0"
+    "express-validator": "^7.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "openai": "^6.10.0",
+    "sequelize": "^6.37.0",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"
+  },
+  "overrides": {
+    "qs": "^6.14.1",
+    "tar": "^7.5.4"
   }
 }
