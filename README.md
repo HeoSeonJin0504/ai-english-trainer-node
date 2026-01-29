@@ -28,25 +28,14 @@ Google Cloud TTS를 통해 생성된 텍스트를 음성으로 들을 수도 있
 ## 📁 프로젝트 구조
 
 ```
-ai-english-trainer-node/
-├── config/                  # 설정 파일
-│   ├── openai.js           # OpenAI API 클라이언트 설정
-│   └── googleTTS.js        # Google TTS 클라이언트 설정
-├── controllers/             # 요청 처리 로직
-│   ├── generateController.js    # 예문/문제 생성 컨트롤러
-│   ├── wordsController.js       # 단어 관리 컨트롤러
-│   └── ttsController.js         # TTS 컨트롤러
-├── routes/                  # API 라우트 정의
-│   ├── generateRoutes.js        # 예문/문제 생성 라우트
-│   ├── wordsRoutes.js           # 단어 관리 라우트
-│   └── ttsRoutes.js             # TTS 라우트
-├── middleware/              # 미들웨어
-│   └── errorHandler.js          # 전역 에러 핸들러
-├── data/                    # 데이터 저장소
-│   └── words.json              # 단어 저장 파일
-├── .env                     # 환경 변수
-├── app.js                   # Express 앱 초기화 및 설정
-└── package.json             # 프로젝트 의존성
+├── app.js                 # 서버 엔트리포인트
+├── config/                # 설정 (DB, JWT, OpenAI, TTS)
+├── models/                # Sequelize 모델
+├── services/              # 비즈니스 로직
+├── controllers/           # 요청/응답 처리
+├── routes/                # API 라우팅
+├── middleware/            # 인증, 에러, 유효성 검증
+└── utils/                 # 유틸리티
 ```
 
 ## 📚 API 엔드포인트
@@ -60,30 +49,6 @@ ai-english-trainer-node/
 | AI 생성 | `/api/generate` | 예문/문제 AI 생성 |
 | TTS | `/api/tts` | 텍스트 음성 변환 |
 
-## 환경 변수 설정
-
-`.env` 파일을 생성하고 다음 내용을 설정하세요:
-
-```env
-# 서버 포트 및 개발 환경 설정
-PORT=3000
-NODE_ENV=development
-
-# MySQL 데이터베이스 설정
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=ai_english_trainer
-DB_USER=root
-DB_PASSWORD=MySQL_비밀번호를_입력하세요
-
-# OpenAI API 설정
-OPENAI_API_KEY=openai_키를_입력하세요
-OPENAI_MODEL=gpt-4o-mini
-
-# Google Cloud TTS 설정
-GOOGLE_APPLICATION_CREDENTIALS=./config/google-credentials.json
-```
-
 ### Google Cloud TTS 설정 방법
 
 1. [Google Cloud Console](https://console.cloud.google.com/)에서 프로젝트 생성
@@ -94,30 +59,24 @@ GOOGLE_APPLICATION_CREDENTIALS=./config/google-credentials.json
 
 ## 🚀 설치 및 실행
 
-### 1. 저장소 클론
-```bash
-git clone <repository-url>
-cd ai-english-trainer-node
+### 1. MySQL 데이터베이스 생성
+
+```sql
+CREATE DATABASE ai_english_trainer;
 ```
 
-### 2. 의존성 설치
+### 2. 환경변수 설정
+
+```bash
+cp .env.example .env
+# .env 파일 편집
+```
+
+### 3. 의존성 설치 및 실행
+
 ```bash
 npm install
-```
-
-### 3. 환경 변수 설정
-`.env` 파일을 생성하고 위의 환경 변수를 설정합니다.
-
-### 4. 서버 실행
-
-**개발 모드 (nodemon)**
-```bash
 npm run dev
-```
-
-**프로덕션 모드**
-```bash
-npm start
 ```
 
 서버가 정상적으로 실행되면 다음과 같은 메시지가 표시됩니다:

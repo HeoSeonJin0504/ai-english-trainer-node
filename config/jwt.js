@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'default-secret-key';
-const JWT_EXPIRATION = parseInt(process.env.JWT_EXPIRATION) || 86400000; // 24시간
+const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '24h';
 
 /**
  * JWT 토큰 생성
