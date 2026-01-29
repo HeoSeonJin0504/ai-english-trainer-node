@@ -1,20 +1,19 @@
-# AI English Trainer (Node.js)
+# AI English Trainer (Backend - Node.js)
 
-AI English Trainer는 OpenAI GPT와 Google Cloud TTS를 활용한 **영어 학습 플랫폼**입니다.
+OpenAI GPT API와 Google Cloud TTS를 활용한  
+AI 기반 영어 학습 플랫폼의 백엔드 서버입니다.
 
-## 📌 프로젝트 개요
-
-사용자가 입력한 영어 단어를 기반으로 AI가 자동으로 예문, 품사, 의미, 유의어/반의어를 생성하고, 
-토익(TOEIC) 문제 또는 영작 문제를 자동 출제하는 학습 시스템입니다.
-Google Cloud TTS를 통해 생성된 텍스트를 음성으로 들을 수도 있습니다.
+사용자가 입력한 영어 단어를 기반으로  
+예문 생성, TOEIC/영작 문제 자동 출제, 음성 변환 기능을 제공합니다.  
+사용자별로 학습 데이터를 관리합니다.
 
 ### 주요 기능
 
-- **단어 학습**: 단어 추가, 조회, 삭제 및 예문/의미/유의어/반의어 자동 생성
-- **예문 생성**: OpenAI GPT-4o-mini를 활용한 영어 예문 자동 생성
-- **문제 생성**: 토익(Part 5/6/7) 및 영작 문제 자동 출제
-- **음성 변환(TTS)**: Google Cloud TTS를 사용한 텍스트 음성 변환
-- **단어 및 문제 관리**: 데이터베이스를 이용해 단어 및 문제 저장 및 관리
+- 사용자 회원가입 / 로그인
+- 단어 검색, 저장, 삭제 및 예문/의미/유의/반의어 생성
+- TOEIC(Part 5/6/7) 및 영작 문제 자동 출제
+- Google TTS 음성 변환
+- 데이터베이스를 이용해 단어 및 문제 저장 및 관리
 
 ## 🛠️ 기술 스택
 
@@ -22,7 +21,7 @@ Google Cloud TTS를 통해 생성된 텍스트를 음성으로 들을 수도 있
 - **Framework**: Express 5.x
 - **Database**: MySQL + Sequelize ORM
 - **Auth**: JWT
-- **AI**: OpenAI GPT API
+- **OpenAI**: OpenAI GPT API
 - **TTS**: Google Cloud Text-to-Speech
 
 ## 📁 프로젝트 구조
@@ -88,9 +87,6 @@ npm run dev
 - OpenAI API 키는 유료 사용량에 따라 과금됩니다
 - Google TTS API도 사용량에 따라 과금됩니다
 - `.env` 파일은 절대 Git에 커밋하지 마세요
-
-## 개발
-본 프로젝트는 **GitHub Copilot (Claude Sonnet 4.5)** 및 **Claude Sonnet 4.5 AI**를 활용하여 코드 작성, 리팩토링 및 문서화 작업을 수행했습니다.
 
 ## 저장소
 본 프로젝트는 2개의 저장소로 구성되어 있습니다:
