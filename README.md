@@ -65,10 +65,10 @@ CREATE DATABASE ai_english_trainer;
 ```
 
 ### 2. 환경변수 설정
-
+`.env.example` 파일을 참고하여 `.env` 파일을 생성합니다.
 ```bash
-cp .env.example .env
-# .env 파일 편집
+cp .env.example .env 
+# .env.example를 참고하여 .env 파일 설정
 ```
 
 ### 3. 의존성 설치 및 실행
