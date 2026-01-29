@@ -14,7 +14,7 @@ Google Cloud TTS를 통해 생성된 텍스트를 음성으로 들을 수도 있
 - **예문 생성**: OpenAI GPT-4o-mini를 활용한 영어 예문 자동 생성
 - **문제 생성**: 토익(Part 5/6/7) 및 영작 문제 자동 출제
 - **음성 변환(TTS)**: Google Cloud TTS를 사용한 텍스트 음성 변환
-- **단어 관리**: 로컬 JSON 파일 기반 단어 저장 및 관리
+- **단어 및 문제 관리**: 데이터베이스를 이용해 단어 및 문제 저장 및 관리
 
 ## 🛠️ 기술 스택
 
@@ -46,7 +46,7 @@ Google Cloud TTS를 통해 생성된 텍스트를 음성으로 들을 수도 있
 | 단어 | `/api/words` | 단어 CRUD, 검색 |
 | 예문 | `/api/examples` | 예문 CRUD, 검색 |
 | 문제 | `/api/questions` | TOEIC/영작 문제 CRUD |
-| AI 생성 | `/api/generate` | 예문/문제 AI 생성 |
+| 생성 | `/api/generate` | 예문/문제 생성 |
 | TTS | `/api/tts` | 텍스트 음성 변환 |
 
 ### Google Cloud TTS 설정 방법
