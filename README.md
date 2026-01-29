@@ -1,4 +1,4 @@
-# AI English Trainer (Node.JS)
+# AI English Trainer (Node.js)
 
 AI English Trainer는 OpenAI GPT와 Google Cloud TTS를 활용한 **영어 학습 플랫폼**입니다.
 
@@ -18,20 +18,12 @@ Google Cloud TTS를 통해 생성된 텍스트를 음성으로 들을 수도 있
 
 ## 🛠️ 기술 스택
 
-### Core
-- **Node.js** (v16+) - 서버 런타임
-- **Express** (v5.2.1) - 웹 프레임워크
-
-### AI & Services
-- **OpenAI API** (v6.10.0) - GPT-4o-mini를 활용한 예문/문제 생성
-- **Google Cloud Text-to-Speech** (v6.4.0) - 영어 음성 합성
-
-### Middleware & Utilities
-- **cors** (v2.8.5) - Cross-Origin Resource Sharing 처리
-- **dotenv** (v17.2.3) - 환경 변수 관리
-
-### Development
-- **nodemon** (v3.1.11) - 개발 서버 자동 재시작
+- **Runtime**: Node.js
+- **Framework**: Express 5.x
+- **Database**: MySQL + Sequelize ORM
+- **Auth**: JWT
+- **AI**: OpenAI GPT API
+- **TTS**: Google Cloud Text-to-Speech
 
 ## 📁 프로젝트 구조
 
@@ -57,45 +49,36 @@ ai-english-trainer-node/
 └── package.json             # 프로젝트 의존성
 ```
 
-## 🔌 API 엔드포인트
+## 📚 API 엔드포인트
 
-### 예문 및 문제 생성 (Generate)
-
-#### `POST /api/generate/examples`
-단어에 대한 예문, 품사, 의미, 유의어/반의어 생성
-
-#### `POST /api/generate/questions`
-토익 또는 영작 문제 생성
-
-### 단어 관리 (Words)
-
-#### `GET /api/words`
-저장된 모든 단어 조회
-
-#### `POST /api/words`
-새 단어 추가
-
-### 음성 변환 (TTS)
-
-#### `POST /api/tts/speak`
-텍스트를 음성으로 변환 (Google TTS)
-
-#### `GET /api/tts/status`
-TTS 서비스 상태 확인
+| 구분 | 엔드포인트 | 설명 |
+|------|-----------|------|
+| 인증 | `/api/auth` | 회원가입, 로그인 |
+| 단어 | `/api/words` | 단어 CRUD, 검색 |
+| 예문 | `/api/examples` | 예문 CRUD, 검색 |
+| 문제 | `/api/questions` | TOEIC/영작 문제 CRUD |
+| AI 생성 | `/api/generate` | 예문/문제 AI 생성 |
+| TTS | `/api/tts` | 텍스트 음성 변환 |
 
 ## 환경 변수 설정
 
 `.env` 파일을 생성하고 다음 내용을 설정하세요:
 
 ```env
-# 서버 포트
+# 서버 포트 및 개발 환경 설정
 PORT=3000
+NODE_ENV=development
+
+# MySQL 데이터베이스 설정
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=ai_english_trainer
+DB_USER=root
+DB_PASSWORD=MySQL_비밀번호를_입력하세요
 
 # OpenAI API 설정
-OPENAI_API_KEY=your_openai_api_key_here
-
-# 환경 설정
-NODE_ENV=development
+OPENAI_API_KEY=openai_키를_입력하세요
+OPENAI_MODEL=gpt-4o-mini
 
 # Google Cloud TTS 설정
 GOOGLE_APPLICATION_CREDENTIALS=./config/google-credentials.json
@@ -140,28 +123,6 @@ npm start
 서버가 정상적으로 실행되면 다음과 같은 메시지가 표시됩니다:
 ```
 서버가 3000 포트에서 열리고 있습니다.
-```
-
-## 📊 데이터 구조
-
-### 단어 저장 형식 (words.json)
-```json
-{
-  "words": [
-    {
-      "id": "1704067200000",
-      "word": "happy",
-      "partOfSpeech": ["형용사"],
-      "examples": [
-        {
-          "english": "I am happy to see you.",
-          "korean": "당신을 만나서 기쁩니다."
-        }
-      ],
-      "createdAt": "2024-01-01T00:00:00.000Z"
-    }
-  ]
-}
 ```
 
 ### 주의사항
