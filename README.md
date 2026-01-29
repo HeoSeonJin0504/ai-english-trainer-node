@@ -86,7 +86,7 @@ npm run dev
 
 ### 주의사항
 - OpenAI API 키는 유료 사용량에 따라 과금됩니다
-- Google TTS API도 사용량에 따라 과금됩니다 (월 100만 자까지 무료)
+- Google TTS API도 사용량에 따라 과금됩니다
 - `.env` 파일은 절대 Git에 커밋하지 마세요
 
 ## 개발
