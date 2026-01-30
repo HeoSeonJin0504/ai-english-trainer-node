@@ -89,10 +89,13 @@ npm run dev
 - `.env` 파일은 절대 Git에 커밋하지 마세요
 
 ## 저장소
-본 프로젝트는 2개의 저장소로 구성되어 있습니다:
+본 프로젝트는 3개의 저장소로 구성되어 있습니다:
 
 - **백엔드 (Node.js)** - 현재 저장소
   - OpenAI GPT 연동, TTS, 데이터 관리, API 서버
   
 - **프론트엔드 (React)**
   - https://github.com/HeoSeonJin0504/ai-english-trainer-front.git
+
+- **백엔드 (Java Spring Boot)** (Node.js와 기능은 동일)
+  - https://github.com/HeoSeonJin0504/ai-english-trainer-spring.git
