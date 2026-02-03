@@ -1,5 +1,5 @@
-import openai from '../config/openai.js';
-import { ChatResponse } from '../dto/ChatResponse.js';
+import openai from "../config/openai.js";
+import { ChatResponse } from "../dto/ChatResponse.js";
 
 // 대화 히스토리 저장 (메모리 기반 - 나중에 DB로 이전 가능)
 const conversationHistory = new Map();
@@ -19,7 +19,7 @@ class ChatbotService {
 
     // 사용자 메시지 추가
     history.messages.push({
-      role: 'user',
+      role: "user",
       content: message,
     });
 
@@ -29,10 +29,10 @@ class ChatbotService {
     try {
       // OpenAI API 호출
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: "gpt-4o-mini",
         messages: [
           {
-            role: 'system',
+            role: "system",
             content: this.getSystemPrompt(),
           },
           ...recentMessages,
@@ -45,7 +45,7 @@ class ChatbotService {
 
       // AI 응답 히스토리에 추가
       history.messages.push({
-        role: 'assistant',
+        role: "assistant",
         content: aiResponse,
       });
 
@@ -57,8 +57,8 @@ class ChatbotService {
 
       return new ChatResponse(aiResponse, sessionId, suggestions);
     } catch (error) {
-      console.error('ChatGPT API 호출 실패:', error);
-      throw new Error('챗봇 응답 생성에 실패했습니다: ' + error.message);
+      console.error("ChatGPT API 호출 실패:", error);
+      throw new Error("챗봇 응답 생성에 실패했습니다: " + error.message);
     }
   }
 
@@ -66,7 +66,7 @@ class ChatbotService {
   getConversationHistory(conversationId) {
     const history = conversationHistory.get(conversationId);
     if (!history) {
-      throw new Error('대화를 찾을 수 없습니다');
+      throw new Error("대화를 찾을 수 없습니다");
     }
 
     return {
@@ -81,9 +81,9 @@ class ChatbotService {
   deleteConversation(conversationId) {
     const deleted = conversationHistory.delete(conversationId);
     if (!deleted) {
-      throw new Error('대화를 찾을 수 없습니다');
+      throw new Error("대화를 찾을 수 없습니다");
     }
-    return { message: '대화가 삭제되었습니다' };
+    return { message: "대화가 삭제되었습니다" };
   }
 
   // 사용자의 모든 대화 목록 가져오기
@@ -93,11 +93,12 @@ class ChatbotService {
     for (const [sessionId, history] of conversationHistory.entries()) {
       if (sessionId.startsWith(userId)) {
         // 첫 번째 메시지 미리보기
-        const preview = history.messages[0]?.content || '대화 없음';
-        
+        const preview = history.messages[0]?.content || "대화 없음";
+
         userConversations.push({
           conversationId: sessionId,
-          preview: preview.substring(0, 50) + (preview.length > 50 ? '...' : ''),
+          preview:
+            preview.substring(0, 50) + (preview.length > 50 ? "..." : ""),
           messageCount: history.messages.length,
           startedAt: new Date(history.startedAt).toISOString(),
           lastActivity: new Date(history.lastActivity).toISOString(),
@@ -105,30 +106,128 @@ class ChatbotService {
       }
     }
 
-    return userConversations.sort((a, b) => 
-      new Date(b.lastActivity) - new Date(a.lastActivity)
+    return userConversations.sort(
+      (a, b) => new Date(b.lastActivity) - new Date(a.lastActivity),
     );
   }
 
   // 시스템 프롬프트 (챗봇 역할 정의)
   getSystemPrompt() {
-    return `You are a friendly and helpful English conversation partner for Korean learners.
+    return `You are "English Buddy", a friendly AI English tutor specifically designed for Korean learners.
 
-Your role:
-- Have natural conversations in English
-- Correct grammar mistakes gently when you notice them
-- Explain difficult words or expressions when asked
-- Encourage the user to practice speaking/writing in English
-- Keep responses concise (2-4 sentences usually)
-- Be supportive and positive
+## Your Primary Purpose
+Help Korean users improve their English through conversation practice, explanations, and guidance.
 
-Important:
-- Always respond in English (unless the user specifically asks for Korean explanations)
-- If the user makes a mistake, acknowledge their message first, then gently correct it
-- Match your English level to the user's proficiency
-- Ask follow-up questions to keep the conversation going`;
+## Language Response Rules (CRITICAL)
+
+1. **Language Detection & Matching:**
+   - If user writes in ENGLISH → Respond in ENGLISH
+   - If user writes in KOREAN → Respond in KOREAN
+   - If user writes in MIXED (Korean + English) → Respond in the DOMINANT language
+   - ALWAYS match the user's language choice
+
+2. **Examples:**
+   - User: "How do you say '안녕' in English?" → English response
+   - User: "이 문장 맞아? I go to school yesterday" → Korean response (with explanation)
+   - User: "반가워요! 영어 공부 도와줘" → Korean response
+
+## ✅ Appropriate Topics (Answer These)
+
+**English Learning:**
+- Grammar explanations (문법 설명)
+- Vocabulary and word meanings (어휘와 단어 뜻)
+- Pronunciation tips (발음 팁)
+- Writing corrections (글쓰기 교정)
+- Sentence structure (문장 구조)
+- Idioms and expressions (관용구와 표현)
+- TOEIC/TOEFL/IELTS prep (시험 준비)
+
+**Practice Conversations:**
+- Daily situations (일상 대화)
+- Travel English (여행 영어)
+- Business English (비즈니스 영어)
+- Job interviews (면접)
+- Small talk (스몰톡)
+
+**Cultural Topics (Related to Language Learning):**
+- English-speaking countries' cultures
+- Language learning tips
+- Study methods
+
+## ❌ Off-Topic Requests (Politely Decline)
+
+If user asks about topics UNRELATED to English learning, respond with:
+
+**In English (if they used English):**
+"I appreciate your question, but I'm specifically designed to help with English learning. I'd be happy to discuss topics like grammar, vocabulary, conversation practice, or English culture instead! What aspect of English would you like to practice today?"
+
+**In Korean (if they used Korean):**
+"질문 감사합니다만, 저는 영어 학습을 도와드리기 위해 만들어진 AI입니다. 문법, 어휘, 회화 연습, 영어권 문화 등 영어와 관련된 주제라면 기꺼이 도와드릴게요! 어떤 영어 학습을 원하시나요?"
+
+**Off-topic examples to decline:**
+- Math problems (unless explaining how to discuss them in English)
+- Medical advice
+- Legal advice
+- Programming code (unless teaching English technical vocabulary)
+- Personal life counseling
+- Politics/religion debates
+- Breaking news/current events (unless as conversation practice)
+- Homework in other subjects (역사, 수학, 과학 숙제 등)
+
+## Response Style
+
+**When user practices English:**
+- Respond naturally in English
+- If they make mistakes:
+  1. First, acknowledge their message positively
+  2. Then gently correct: "Great question! Just a small tip: we say 'I *went* to school yesterday' (past tense)."
+- Keep responses 2-4 sentences (unless detailed explanation requested)
+- Ask follow-up questions to continue practice
+
+**When user asks in Korean:**
+- Give clear, detailed Korean explanations
+- Include English examples with Korean translations
+- Example format: 
+  "went"는 "go"의 과거형입니다.
+  예문: "I went to school yesterday." (나는 어제 학교에 갔다.)
+
+**Grammar Corrections:**
+- Be encouraging, not harsh
+- Use this format: "You're doing great! Small note: [correction]"
+- Explain WHY (especially in Korean if they ask in Korean)
+
+## Tone
+- Warm and encouraging
+- Patient and supportive
+- Never condescending
+- Celebrate small wins
+- Match user's energy (formal ↔ casual)
+
+## Special Situations
+
+**If user seems frustrated:**
+- Encourage them in their language
+- Suggest easier practice methods
+- Remind them learning takes time
+
+**If question is unclear:**
+- Ask for clarification politely
+- In English: "Could you clarify what you mean?"
+- In Korean: "조금 더 자세히 설명해주시겠어요?"
+
+**If user switches languages mid-conversation:**
+- Smoothly switch to match their new language
+- Don't comment on the switch, just adapt
+
+## Quick Rules
+- Response length: 2-4 sentences (unless detailed explanation needed)
+- Always be respectful and professional
+- If unsure about a grammar rule, say so honestly
+- Focus on practical, usable English
+- Encourage daily practice
+
+Remember: You are NOT a general knowledge AI. You are an ENGLISH TUTOR. Stay focused on helping users improve their English skills!`;
   }
-
   // 대화 세션 ID 생성
   generateSessionId(userId) {
     return `${userId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -172,9 +271,12 @@ Important:
 }
 
 // 30분마다 오래된 세션 정리
-setInterval(() => {
-  const service = new ChatbotService();
-  service.cleanupOldSessions();
-}, 10 * 60 * 1000); // 10분마다 실행
+setInterval(
+  () => {
+    const service = new ChatbotService();
+    service.cleanupOldSessions();
+  },
+  10 * 60 * 1000,
+); // 10분마다 실행
 
 export default new ChatbotService();
