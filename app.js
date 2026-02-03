@@ -10,6 +10,7 @@ import questionRoutes from './routes/questionRoutes.js';
 import generateRoutes from './routes/generateRoutes.js';
 import ttsRoutes from './routes/ttsRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import chatbotRoutes from './routes/chatbotRoutes.js';
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ app.use('/api/examples', exampleRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/generate', generateRoutes);
 app.use('/api/tts', ttsRoutes);
+app.use('/api/chat', chatbotRoutes); 
 
 // 에러 핸들러
 app.use(errorHandler);
