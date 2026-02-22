@@ -12,6 +12,7 @@ import generateRoutes from './routes/generateRoutes.js';
 import ttsRoutes from './routes/ttsRoutes.js';
 import chatbotRoutes from './routes/chatbotRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { globalLimiter } from './middleware/rateLimiter.js';
 
 dotenv.config();
 
@@ -19,8 +20,11 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
-// ✅ X-Powered-By 헤더 제거 (서버 정보 노출 방지)
+// X-Powered-By 헤더 제거 (서버 정보 노출 방지)
 app.disable('x-powered-by');
+
+// Render 리버스 프록시 신뢰 설정 (실제 클라이언트 IP 식별 필수)
+app.set('trust proxy', 1);
 
 // 허용할 프론트엔드 오리진
 const allowedOrigins = [
@@ -31,35 +35,34 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // origin이 없는 요청 (Postman 등)
     if (!origin) {
-      // 프로덕션에서는 차단, 개발환경에서는 허용
       if (IS_PRODUCTION) {
         return callback(null, false);
       }
       return callback(null, true);
     }
-
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-
     console.warn(`[CORS] 차단된 오리진: ${origin}`);
     return callback(null, false);
   },
-  credentials: true, // httpOnly Cookie 전송을 위해 필수
+  credentials: true,
 }));
 
 // 미들웨어
 app.use(cookieParser());
-app.use(express.json({ limit: '10kb' })); // 요청 본문 크기 제한 (DoS 방지)
+app.use(express.json({ limit: '10kb' }));
+
+// 전체 API 글로벌 Rate Limit 적용
+app.use('/api', globalLimiter);
 
 // 루트
 app.get('/', (req, res) => {
   res.json({ message: 'AI English Trainer API 서버가 정상 작동 중입니다!' });
 });
 
-// 헬스체크
+// 헬스체크 (Render 슬립모드 방지 핑 용도)
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
