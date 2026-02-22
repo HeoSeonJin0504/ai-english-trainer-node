@@ -1,5 +1,6 @@
-import chatbotService from '../services/Chatbotservice.js';
+import chatbotService from '../services/chatbotService.js';
 import { ChatRequest } from '../dto/ChatRequest.js';
+import { getCurrentUserId } from '../middleware/authMiddleware.js';
 
 // 챗봇 메시지 전송 POST /api/chat/message
 export const sendMessage = async (req, res, next) => {
@@ -10,16 +11,10 @@ export const sendMessage = async (req, res, next) => {
     const chatRequest = new ChatRequest(message, conversationId);
     chatRequest.validate();
 
-    // 사용자 ID (인증된 경우 - 여기서는 임시로 처리)
-    // 실제로는 JWT 토큰에서 추출해야 함
-    const userId = req.userId || 'anonymous';
+    // authMiddleware가 보장하는 인증된 userId
+    const userId = getCurrentUserId(req);
 
-    // 챗봇 응답 생성
-    const response = await chatbotService.sendMessage(
-      userId,
-      message,
-      conversationId
-    );
+    const response = await chatbotService.sendMessage(userId, message, conversationId);
 
     res.json({
       success: true,
@@ -68,7 +63,7 @@ export const deleteConversation = async (req, res, next) => {
 // 사용자의 대화 목록 조회 GET /api/chat/conversations
 export const getConversations = async (req, res, next) => {
   try {
-    const userId = req.userId || 'anonymous';
+    const userId = getCurrentUserId(req);
 
     const conversations = chatbotService.getUserConversations(userId);
 

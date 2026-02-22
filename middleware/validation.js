@@ -23,11 +23,11 @@ export const signUpValidation = [
     .isLength({ min: 4, max: 50 }).withMessage('아이디는 4~50자 사이여야 합니다.')
     .matches(/^[a-zA-Z0-9_]+$/).withMessage('아이디는 영문, 숫자, 언더스코어만 가능합니다.'),
   body('password')
-    .notEmpty().withMessage('비밀번호는 필수입니다.')
-    .isLength({ min: 8, max: 100 }).withMessage('비밀번호는 8자 이상이어야 합니다.'),
+    .notEmpty().withMessage('비밀번호는 필수입니다.'),
+    // .isLength({ min: 8, max: 100 }).withMessage('비밀번호는 8자 이상이어야 합니다.'), // 임시 해제 
   body('phone')
-    .notEmpty().withMessage('핸드폰 번호는 필수입니다.')
-    .matches(/^01[0-9]{8,9}$/).withMessage('올바른 핸드폰 번호 형식이 아닙니다.'),
+    .notEmpty().withMessage('핸드폰 번호는 필수입니다.'),
+    // .matches(/^01[0-9]{8,9}$/).withMessage('올바른 핸드폰 번호 형식이 아닙니다.'), // 임시 해제 
   body('email')
     .optional({ nullable: true, checkFalsy: true })
     .isEmail().withMessage('올바른 이메일 형식이 아닙니다.'),

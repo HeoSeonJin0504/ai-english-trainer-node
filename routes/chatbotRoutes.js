@@ -5,8 +5,12 @@ import {
   deleteConversation,
   getConversations,
 } from '../controllers/chatbotController.js';
+import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
+
+// 모든 챗봇 라우트에 인증 적용
+router.use(authMiddleware);
 
 // POST /api/chat/message - 챗봇에게 메시지 전송
 router.post('/message', sendMessage);
