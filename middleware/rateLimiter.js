@@ -10,7 +10,7 @@ const handler = (req, res) => {
 
 /**
  * 로그인 제한
- * - IP당 1시간에 10회
+ * - IP당 1시간에 5회
  */
 export const loginLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
