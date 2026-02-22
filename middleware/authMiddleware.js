@@ -2,21 +2,27 @@ import { verifyToken } from '../config/jwt.js';
 import { UnauthorizedException } from '../utils/errors.js';
 import ApiResponse from '../utils/ApiResponse.js';
 
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+
 /**
  * JWT 인증 미들웨어
- * 우선순위: httpOnly Cookie > Authorization Bearer 헤더
+ *
+ * 토큰 우선순위: httpOnly Cookie > Authorization Bearer 헤더
+ *
+ * Bearer 헤더는 개발환경(Postman 테스트)에서만 허용
+ * 프로덕션에서는 httpOnly Cookie만 허용
  */
 export const authMiddleware = (req, res, next) => {
   try {
     let token = null;
 
-    // 1순위: httpOnly Cookie
+    // 1순위: httpOnly Cookie (프로덕션/개발 모두 허용)
     if (req.cookies && req.cookies.accessToken) {
       token = req.cookies.accessToken;
     }
 
-    // 2순위: Authorization Bearer 헤더 (Postman 테스트, 모바일 등)
-    if (!token) {
+    // 2순위: Authorization Bearer 헤더 (개발환경에서만 허용)
+    if (!token && !IS_PRODUCTION) {
       const authHeader = req.headers.authorization;
       if (authHeader && authHeader.startsWith('Bearer ')) {
         token = authHeader.substring(7);

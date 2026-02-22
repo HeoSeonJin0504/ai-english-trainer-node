@@ -3,9 +3,21 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'default-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '24h';
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+
+// 프로덕션에서 JWT_SECRET 없으면 서버 시작 중단
+if (!JWT_SECRET) {
+  if (IS_PRODUCTION) {
+    console.error('❌ FATAL: JWT_SECRET 환경변수가 설정되지 않았습니다. 서버를 종료합니다.');
+    process.exit(1);
+  } else {
+    console.warn('⚠️  JWT_SECRET이 없습니다. 개발용 임시 키를 사용합니다. 프로덕션에서는 반드시 설정하세요!');
+  }
+}
+
+const EFFECTIVE_SECRET = JWT_SECRET || 'dev-only-insecure-secret-do-not-use-in-production';
 
 /**
  * JWT 토큰 생성
@@ -13,7 +25,7 @@ const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 export const createToken = (userId, username) => {
   return jwt.sign(
     { userId, username },
-    JWT_SECRET,
+    EFFECTIVE_SECRET,
     { expiresIn: JWT_EXPIRATION }
   );
 };
@@ -23,7 +35,7 @@ export const createToken = (userId, username) => {
  */
 export const verifyToken = (token) => {
   try {
-    return jwt.verify(token, JWT_SECRET);
+    return jwt.verify(token, EFFECTIVE_SECRET);
   } catch (error) {
     return null;
   }
@@ -31,20 +43,21 @@ export const verifyToken = (token) => {
 
 /**
  * httpOnly Cookie에 JWT 토큰 세팅
- *   프로덕션에서는 SameSite=None; Secure 필수
+ * 프로덕션에서는 SameSite=None + Secure 필수
  */
 export const setTokenCookie = (res, token) => {
   res.cookie('accessToken', token, {
-    httpOnly: true,                          // JS에서 접근 불가 (XSS 방지)
-    secure: IS_PRODUCTION,                   // HTTPS에서만 전송
-    sameSite: IS_PRODUCTION ? 'None' : 'Lax', // 크로스 오리진 허용
-    maxAge: 24 * 60 * 60 * 1000,            // 24시간 (ms)
+    httpOnly: true,                              // JS에서 접근 불가 (XSS 방지)
+    secure: IS_PRODUCTION,                       // HTTPS에서만 전송
+    sameSite: IS_PRODUCTION ? 'None' : 'Lax',   // 크로스 오리진 허용 (Vercel ↔ Render)
+    maxAge: 24 * 60 * 60 * 1000,                // 24시간 (ms)
     path: '/',
   });
 };
 
 /**
  * Cookie 삭제 (로그아웃)
+ * 로그인 시와 동일한 옵션을 사용해야 정상 삭제됨
  */
 export const clearTokenCookie = (res) => {
   res.clearCookie('accessToken', {

@@ -1,29 +1,75 @@
 import openai from "../config/openai.js";
 import { ChatResponse } from "../dto/ChatResponse.js";
 
-// 대화 히스토리 저장 (메모리 기반 - 나중에 DB로 이전 가능)
+// 대화 히스토리 저장 (메모리 기반) DB로 마이그레이션 예정
 const conversationHistory = new Map();
+
+// 사용자별 요청 횟수 추적 (Rate Limiting)
+const userRequestCount = new Map();
 
 // 대화 세션 최대 유지 시간 (30분)
 const SESSION_TIMEOUT = 30 * 60 * 1000;
 
-// 오래된 대화 세션 정리 (모듈 레벨로 분리 - 인스턴스 생성 불필요)
+// Rate Limit 설정
+const RATE_LIMIT = {
+  maxRequests: 20,       // 시간당 최대 요청 수
+  windowMs: 60 * 60 * 1000, // 1시간 (ms)
+};
+
+// 오래된 세션 정리
 const cleanupOldSessions = () => {
   const now = Date.now();
+
+  // 만료된 대화 세션 삭제
   for (const [sessionId, history] of conversationHistory.entries()) {
     if (now - history.lastActivity > SESSION_TIMEOUT) {
       conversationHistory.delete(sessionId);
-      console.log(`세션 만료: ${sessionId}`);
+      console.log(`[ChatbotService] 세션 만료: ${sessionId}`);
+    }
+  }
+
+  // 만료된 Rate Limit 카운터 삭제
+  for (const [userId, record] of userRequestCount.entries()) {
+    if (now - record.windowStart > RATE_LIMIT.windowMs) {
+      userRequestCount.delete(userId);
     }
   }
 };
 
-// 10분마다 오래된 세션 정리
+// 10분마다 정리
 setInterval(cleanupOldSessions, 10 * 60 * 1000);
 
 class ChatbotService {
+
+  /**
+   * 사용자 Rate Limit 확인
+   * @returns {boolean} true = 허용, false = 차단
+   */
+  checkRateLimit(userId) {
+    const now = Date.now();
+    const record = userRequestCount.get(String(userId));
+
+    if (!record || now - record.windowStart > RATE_LIMIT.windowMs) {
+      // 새 윈도우 시작
+      userRequestCount.set(String(userId), { count: 1, windowStart: now });
+      return true;
+    }
+
+    if (record.count >= RATE_LIMIT.maxRequests) {
+      return false; // 한도 초과
+    }
+
+    record.count++;
+    return true;
+  }
+
   // 사용자 메시지에 응답
   async sendMessage(userId, message, conversationId = null) {
+    // Rate Limit 확인
+    if (!this.checkRateLimit(userId)) {
+      throw new Error('요청 한도를 초과했습니다. 1시간 후 다시 시도해주세요.');
+    }
+
     const sessionId = conversationId || this.generateSessionId(userId);
     const history = this.getOrCreateHistory(sessionId);
 
@@ -62,7 +108,9 @@ class ChatbotService {
 
       return new ChatResponse(aiResponse, sessionId, suggestions);
     } catch (error) {
-      console.error("ChatGPT API 호출 실패:", error);
+      // 히스토리에서 실패한 사용자 메시지 제거 (재시도 시 중복 방지)
+      history.messages.pop();
+      console.error("[ChatbotService] ChatGPT API 호출 실패:", error.message);
       throw new Error("챗봇 응답 생성에 실패했습니다: " + error.message);
     }
   }
@@ -250,7 +298,7 @@ Remember: You are NOT a general knowledge AI. You are an ENGLISH TUTOR. Stay foc
     return conversationHistory.get(sessionId);
   }
 
-  // 추천 질문 생성 (간단한 로직)
+  // 추천 질문 생성
   generateSuggestions(userMessage, aiResponse) {
     const suggestions = [
       "Can you explain that in simpler terms?",
