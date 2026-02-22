@@ -52,12 +52,14 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
 export const syncDatabase = async (force = false) => {
   try {
     await sequelize.authenticate();
+    console.log('데이터베이스 연결 성공 (PostgreSQL/Supabase)');
     await sequelize.sync({ force });
-    console.log('MySQL 데이터베이스 연결 및 동기화 완료');
+    console.log('데이터베이스 동기화 완료');
   } catch (error) {
     console.error('데이터베이스 연결 실패:', error.message);
     throw error;
   }
 };
+
 
 export default sequelize;
