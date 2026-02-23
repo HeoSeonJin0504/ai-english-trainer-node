@@ -1,11 +1,9 @@
 import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
+import config from './env.js';
 
-dotenv.config();
-
-const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '24h';
-const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+const JWT_SECRET = config.JWT_SECRET;
+const JWT_EXPIRATION = config.JWT_EXPIRATION || '24h';
+const IS_PRODUCTION = config.NODE_ENV === 'production';
 
 // 프로덕션에서 JWT_SECRET 없으면 서버 시작 중단
 if (!JWT_SECRET) {

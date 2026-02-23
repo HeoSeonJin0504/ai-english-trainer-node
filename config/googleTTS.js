@@ -1,7 +1,5 @@
 import textToSpeech from '@google-cloud/text-to-speech';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import config from './env.js';
 
 /**
  * Google TTS 클라이언트 생성
@@ -9,13 +7,13 @@ dotenv.config();
 const createTTSClient = () => {
   try {
     // 환경변수로 Google Cloud 인증 정보 설정
-    if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    if (config.GOOGLE_APPLICATION_CREDENTIALS) {
       return new textToSpeech.TextToSpeechClient({
-        keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
+        keyFilename: config.GOOGLE_APPLICATION_CREDENTIALS
       });
-    } else if (process.env.GOOGLE_CREDENTIALS_JSON) {
+    } else if (config.GOOGLE_CREDENTIALS_JSON) {
       // 또는 JSON 직접 사용 (Railway, Vercel 등 배포 시)
-      const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
+      const credentials = JSON.parse(config.GOOGLE_CREDENTIALS_JSON);
       return new textToSpeech.TextToSpeechClient({
         credentials
       });

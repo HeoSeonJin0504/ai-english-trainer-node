@@ -1,12 +1,9 @@
 import OpenAI from 'openai';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import config from './env.js';
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: config.OPENAI_API_KEY,
 });
 
-export const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
-
+export const OPENAI_MODEL = config.OPENAI_MODEL;
 export default openai;
