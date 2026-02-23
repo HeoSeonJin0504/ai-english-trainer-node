@@ -15,8 +15,8 @@ build/
 *.local
 *.json
 !package.json
+!package-lock.json
 !tsconfig.json
-words.json
 
 # Credentials
 credentials/
