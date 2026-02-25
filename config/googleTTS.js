@@ -1,32 +1,24 @@
 import textToSpeech from '@google-cloud/text-to-speech';
-import config from './env.js';
 
-/**
- * Google TTS 클라이언트 생성
- */
 const createTTSClient = () => {
   try {
-    // 환경변수로 Google Cloud 인증 정보 설정
-    if (config.GOOGLE_APPLICATION_CREDENTIALS) {
+    if (process.env.GOOGLE_TTS_CREDENTIALS_BASE64) {
+      const json = Buffer.from(process.env.GOOGLE_TTS_CREDENTIALS_BASE64, 'base64').toString('utf8');
+      const credentials = JSON.parse(json);
+      return new textToSpeech.TextToSpeechClient({ credentials });
+    } else if (process.env.GOOGLE_TTS_CREDENTIALS_PATH) {
       return new textToSpeech.TextToSpeechClient({
-        keyFilename: config.GOOGLE_APPLICATION_CREDENTIALS
-      });
-    } else if (config.GOOGLE_CREDENTIALS_JSON) {
-      // 또는 JSON 직접 사용 (Railway, Vercel 등 배포 시)
-      const credentials = JSON.parse(config.GOOGLE_CREDENTIALS_JSON);
-      return new textToSpeech.TextToSpeechClient({
-        credentials
+        keyFilename: process.env.GOOGLE_TTS_CREDENTIALS_PATH,
       });
     } else {
-      console.warn('⚠️  Google Cloud 인증 정보가 없습니다. TTS 기능이 비활성화됩니다.');
+      console.warn('AiEnglishTrainer의 Google TTS 인증 정보가 없습니다. TTS 기능이 비활성화됩니다.');
       return null;
     }
   } catch (error) {
-    console.error('❌ Google TTS 클라이언트 생성 실패:', error.message);
+    console.error('Google TTS 클라이언트 생성 실패:', error.message);
     return null;
   }
 };
 
 const ttsClient = createTTSClient();
-
 export default ttsClient;

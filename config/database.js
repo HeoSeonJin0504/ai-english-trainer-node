@@ -7,7 +7,7 @@ const sequelize = new Sequelize(config.DATABASE_URL, {
   logging: process.env.NODE_ENV === 'development' ? console.log : false,
   dialectOptions: {
     // Render → Supabase 연결 시 SSL 필수
-    ssl: process.env.NODE_ENV === 'production'
+    ssl: config.NODE_ENV === 'production'
       ? { require: true, rejectUnauthorized: false }
       : false,
   },

@@ -1,26 +1,31 @@
+import logger from '../utils/logger.js';
 import ApiResponse from '../utils/ApiResponse.js';
 
 export const errorHandler = (err, req, res, next) => {
-  // 개발 환경에서만 스택 트레이스 출력
-  if (process.env.NODE_ENV === 'development') {
-    console.error('Error:', err);
+  const statusCode = err.statusCode || err.status || 500;
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  if (statusCode >= 500) {
+    logger.error(`[${statusCode}] ${req.method} ${req.path} - ${err.message}`);
   } else {
-    console.error(`[${new Date().toISOString()}] ${err.name}: ${err.message}`);
+    logger.warn(`[${statusCode}] ${req.method} ${req.path} - ${err.message}`);
   }
 
-  const statusCode = err.statusCode || 500;
-
-  // 500 에러는 내부 메시지를 클라이언트에 노출하지 않음
-  const message = statusCode === 500
-    ? '서버 내부 오류가 발생했습니다.'
-    : err.message || '요청을 처리할 수 없습니다.';
-
-  const response = ApiResponse.error(message);
-
-  // 개발 환경에서만 스택 트레이스 포함
-  if (process.env.NODE_ENV === 'development' && err.stack) {
-    response.stack = err.stack;
+  // JWT 오류
+  if (err.name === 'JsonWebTokenError') {
+    return res.status(401).json(ApiResponse.error('유효하지 않은 토큰입니다.'));
+  }
+  if (err.name === 'TokenExpiredError') {
+    return res.status(401).json(ApiResponse.error('토큰이 만료되었습니다.'));
   }
 
-  res.status(statusCode).json(response);
+  // 유효성 오류
+  if (err.name === 'ValidationError') {
+    return res.status(400).json(ApiResponse.error(err.message));
+  }
+
+  // 일반 오류
+  res.status(statusCode).json(
+    ApiResponse.error(isProduction ? '서버 내부 오류가 발생했습니다.' : err.message)
+  );
 };
