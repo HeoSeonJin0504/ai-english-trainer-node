@@ -124,7 +124,7 @@ npm run dev
 
 ## Google Cloud TTS 설정
 
-TTS는 선택 사항입니다. 설정하지 않으면 서버는 정상 실행되며, TTS 요청 시 503을 반환합니다.
+TTS는 선택 사항입니다. 설정하지 않으면 Web Speech API로 대체 작동합니다.
 
 1. [Google Cloud Console](https://console.cloud.google.com/)에서 프로젝트 생성
 2. Text-to-Speech API 활성화
