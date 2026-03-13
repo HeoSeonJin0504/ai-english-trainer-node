@@ -27,7 +27,7 @@ export const syncDatabase = async (force = false) => {
   try {
     await sequelize.authenticate();
     console.log('데이터베이스 연결 성공 (MySQL)');
-    await sequelize.sync({ force });
+    await sequelize.sync({ force, alter: force ? false : true });
     console.log('데이터베이스 동기화 완료');
   } catch (error) {
     console.error('데이터베이스 연결 실패:', error.message);
