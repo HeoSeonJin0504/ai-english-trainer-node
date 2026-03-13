@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import { syncDatabase } from './config/database.js';
 import './models/index.js';
+import passport from './config/passport.js';
 import authRoutes from './routes/authRoutes.js';
 import wordRoutes from './routes/wordRoutes.js';
 import exampleRoutes from './routes/exampleRoutes.js';
@@ -53,6 +54,9 @@ app.use(cors({
 // 미들웨어
 app.use(cookieParser());
 app.use(express.json({ limit: '10kb' }));
+
+// Passport 초기화 (session 없이 JWT 방식으로 사용)
+app.use(passport.initialize());
 
 // 전체 API 글로벌 Rate Limit 적용
 app.use('/api', globalLimiter);
