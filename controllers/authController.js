@@ -1,6 +1,7 @@
 import authService from '../services/authService.js';
 import ApiResponse from '../utils/ApiResponse.js';
 import { setTokenCookie, clearTokenCookie } from '../config/jwt.js';
+import { User } from '../models/index.js';
 
 // 회원가입, POST /api/auth/signup
 export const signUp = async (req, res, next) => {
@@ -70,10 +71,24 @@ export const checkPhone = async (req, res, next) => {
   }
 };
 
+// 현재 로그인된 사용자 정보 조회, GET /api/auth/me
+export const getMe = async (req, res, next) => {
+  try {
+    const user = await User.findByPk(req.user.userId);
+    if (!user) {
+      return res.status(404).json(ApiResponse.error('사용자를 찾을 수 없습니다.'));
+    }
+    res.json(ApiResponse.success(user.toJSON()));
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   signUp,
   login,
   logout,
   checkUsername,
   checkPhone,
+  getMe,
 };

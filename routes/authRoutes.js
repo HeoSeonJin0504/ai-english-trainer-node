@@ -4,6 +4,7 @@ import oauthController from '../controllers/oauthController.js';
 import { signUpValidation, loginValidation } from '../middleware/validation.js';
 import { loginLimiter, signUpLimiter } from '../middleware/rateLimiter.js';
 import passport from '../config/passport.js';
+import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -52,6 +53,9 @@ router.get('/naver/callback',
   passport.authenticate('naver', { session: false, failureRedirect: '/api/auth/oauth/failure' }),
   oauthController.oauthCallback
 );
+
+// GET /api/auth/me - 현재 로그인된 사용자 정보 조회
+router.get('/me', authMiddleware, authController.getMe);
 
 // OAuth 공통 실패 처리
 // GET /api/auth/oauth/failure - OAuth 인증 실패
